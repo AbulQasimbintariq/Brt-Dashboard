@@ -40,9 +40,16 @@ export default function Dashboard() {
   };
 
   const titleStyle = {
-    fontSize: '30px',
-    fontWeight: 'bold',
+    fontSize: '48px',
+    fontWeight: '900',
     margin: '0 0 16px 0',
+    background: 'linear-gradient(135deg, #aa3bff 0%, #ff006e 50%, #00d4ff 100%)',
+    backgroundClip: 'text',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    letterSpacing: '2px',
+    textShadow: 'none',
+    filter: 'drop-shadow(0 8px 16px rgba(170, 59, 255, 0.3))',
   };
 
   const gridStyle = {
@@ -67,8 +74,8 @@ export default function Dashboard() {
     <div style={dashboardStyle}>
       <div style={headerStyle}>
         <div style={headerLeftStyle}>
-          <h1 style={titleStyle}>BRT Dashboard - Live</h1>
-          <p style={{ margin: '0', color: '#94a3b8' }}>Real-time transit intelligence for BRT routes</p>
+          <h1 style={titleStyle}>BRT DASHBOARD</h1>
+          <p style={{ margin: '0', color: '#94a3b8', fontSize: '16px', fontWeight: '500' }}>Real-time transit intelligence system</p>
         </div>
         <button 
           style={exportButtonStyle}

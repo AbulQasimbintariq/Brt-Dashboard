@@ -12,6 +12,18 @@ CREATE TABLE IF NOT EXISTS routes (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Active buses (current fleet status)
+CREATE TABLE IF NOT EXISTS buses (
+  id TEXT PRIMARY KEY,
+  route TEXT NOT NULL,
+  latitude NUMERIC(10, 8) NOT NULL,
+  longitude NUMERIC(11, 8) NOT NULL,
+  speed NUMERIC(5, 2),
+  passengers INTEGER DEFAULT 0,
+  delay INTEGER DEFAULT 0,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Real-time bus data snapshots (time-series)
 CREATE TABLE IF NOT EXISTS bus_snapshots (
   id BIGSERIAL PRIMARY KEY,
@@ -51,6 +63,7 @@ CREATE TABLE IF NOT EXISTS passenger_metrics (
 );
 
 -- Create indexes for better query performance
+CREATE INDEX IF NOT EXISTS idx_buses_route ON buses(route);
 CREATE INDEX IF NOT EXISTS idx_bus_snapshots_recorded_at ON bus_snapshots(recorded_at DESC);
 CREATE INDEX IF NOT EXISTS idx_bus_snapshots_route ON bus_snapshots(route);
 CREATE INDEX IF NOT EXISTS idx_bus_snapshots_bus_id ON bus_snapshots(bus_id);
@@ -58,16 +71,17 @@ CREATE INDEX IF NOT EXISTS idx_delay_metrics_date ON delay_metrics(metric_date D
 CREATE INDEX IF NOT EXISTS idx_passenger_metrics_recorded_at ON passenger_metrics(recorded_at DESC);
 
 -- Enable Row Level Security
+ALTER TABLE buses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE bus_snapshots ENABLE ROW LEVEL SECURITY;
 ALTER TABLE delay_metrics ENABLE ROW LEVEL SECURITY;
 ALTER TABLE passenger_metrics ENABLE ROW LEVEL SECURITY;
 
 -- Create a policy to allow public read access (adjust as needed for security)
-CREATE POLICY "Allow public read on bus_snapshots" 
-  ON bus_snapshots FOR SELECT 
+CREATE POLICY "Allow public read on buses" 
+  ON buses FOR SELECT 
   USING (true);
 
-CREATE POLICY "Allow public read on delay_metrics" 
+CREATE POLICY "Allow public read on bus_snapshots" 
   ON delay_metrics FOR SELECT 
   USING (true);
 
@@ -76,6 +90,14 @@ CREATE POLICY "Allow public read on passenger_metrics"
   USING (true);
 
 -- Create a policy to allow service role writes (for API)
+CREATE POLICY "Allow service role insert on buses"
+  ON buses FOR INSERT
+  WITH CHECK (auth.role() = 'service_role');
+
+CREATE POLICY "Allow service role update on buses"
+  ON buses FOR UPDATE
+  WITH CHECK (auth.role() = 'service_role');
+
 CREATE POLICY "Allow service role insert on bus_snapshots"
   ON bus_snapshots FOR INSERT
   WITH CHECK (auth.role() = 'service_role');

@@ -1,5 +1,22 @@
 import { useEffect, useState } from 'react';
 
+// BRT Green Line stops on Khayaban-e-Sher Shah Suri (Surjani to Numaish, Karachi)
+const brtGreenLineStops = [
+  { name: 'Surjani Terminal', lat: 24.8945, lng: 67.0844 },
+  { name: 'Orangi Town', lat: 24.8854, lng: 67.0789 },
+  { name: 'Gulshan-e-Iqbal', lat: 24.8714, lng: 67.0657 },
+  { name: 'Nazimabad', lat: 24.8594, lng: 67.0564 },
+  { name: 'Gulberg', lat: 24.8485, lng: 67.0491 },
+  { name: 'Liaquatabad', lat: 24.8356, lng: 67.0428 },
+  { name: 'Sohrab Goth', lat: 24.8267, lng: 67.0365 },
+  { name: 'Maripur', lat: 24.8178, lng: 67.0302 },
+  { name: 'North Karachi', lat: 24.8089, lng: 67.0239 },
+  { name: 'Federal B Area', lat: 24.8000, lng: 67.0176 },
+  { name: 'Malir City', lat: 24.7911, lng: 67.0113 },
+  { name: 'Bin Qasim', lat: 24.7822, lng: 67.0050 },
+  { name: 'Numaish Terminal', lat: 24.7733, lng: 66.9987 },
+];
+
 export function useBusData() {
   const [buses, setBuses] = useState([]);
 
@@ -13,12 +30,25 @@ export function useBusData() {
         setBuses(busesData);
       } catch (error) {
         console.error('Failed to fetch buses:', error);
-        // Use mock data on error
-        setBuses([
-          { id: '1', route: 'Route A', latitude: 24.8607, longitude: 67.0011, speed: 32, passengers: 24, delay: 2 },
-          { id: '2', route: 'Route B', latitude: 24.8671, longitude: 67.0328, speed: 27, passengers: 18, delay: 4 },
-          { id: '3', route: 'Route C', latitude: 24.8800, longitude: 67.0100, speed: 22, passengers: 35, delay: 6 },
-        ]);
+        // Use random mock data on error to ensure 20 buses with varying values
+        const mocks = [];
+        for (let i = 1; i <= 20; i++) {
+          // Pick bus stop from BRT Green Line
+          const stop = brtGreenLineStops[(i - 1) % brtGreenLineStops.length];
+          // Add slight variation for buses at same stop
+          const latVariation = (Math.random() - 0.5) * 0.0006;
+          const lngVariation = (Math.random() - 0.5) * 0.0006;
+          mocks.push({
+            id: `BRT-${i.toString().padStart(2, '0')}`,
+            route: `Khayaban-e-Sher Shah Suri (${stop.name})`,
+            latitude: stop.lat + latVariation,
+            longitude: stop.lng + lngVariation,
+            speed: Math.floor(Math.random() * 40) + 15, // 15-55 km/h
+            passengers: Math.floor(Math.random() * 60) + 5, // 5-65 passengers
+            delay: Math.floor(Math.random() * 15), // 0-14 minutes
+          });
+        }
+        setBuses(mocks);
       }
     };
     
