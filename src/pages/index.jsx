@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useBusData } from '../hooks/useBusData';
+import useLocale from '../hooks/useLocale';
 import StatsCard from '../components/StatsCard';
 import BusMap from '../components/BusMap';
 import DelayGraph from '../components/DelayGraph';
@@ -8,8 +9,9 @@ import { exportToPDF } from '../lib/exportPDF';
 export default function Dashboard() {
   const buses = useBusData();
   const [showBusDetails, setShowBusDetails] = useState(false);
+  const { locale, setLocale, dir, t, formatNumber, formatDateTime } = useLocale();
   const totalPassengers = buses.reduce((a, b) => a + b.passengers, 0);
-  const avgSpeed = buses.length > 0 ? (buses.reduce((a, b) => a + b.speed, 0) / buses.length).toFixed(1) : 0;
+  const avgSpeed = buses.length > 0 ? buses.reduce((a, b) => a + b.speed, 0) / buses.length : 0;
 
   const dashboardStyle = {
     padding: '24px',
@@ -182,36 +184,42 @@ export default function Dashboard() {
   };
 
   return (
-    <div style={dashboardStyle}>
+    <div style={dashboardStyle} dir={dir} lang={locale}>
       <div style={headerStyle}>
         <div style={headerLeftStyle}>
-          <h1 style={titleStyle}>BRT DASHBOARD</h1>
-          <p style={{ margin: '0', color: '#94a3b8', fontSize: '16px', fontWeight: '500' }}>Real-time transit intelligence system</p>
+          <h1 style={titleStyle}>{t('title')}</h1>
+          <p style={{ margin: '0', color: '#94a3b8', fontSize: '16px', fontWeight: '500' }}>{t('subtitle')}</p>
         </div>
         <div style={buttonGroupStyle}>
-          <button 
-            style={detailsButtonStyle}
-            onClick={() => setShowBusDetails(true)}
-            onMouseOver={(e) => e.target.style.backgroundColor = '#00b8d4'}
-            onMouseOut={(e) => e.target.style.backgroundColor = '#00d4ff'}
-          >
-            📊 Complete Info
-          </button>
-          <button 
-            style={exportButtonStyle}
-            onClick={() => exportToPDF(buses, 'brt-dashboard')}
-            onMouseOver={(e) => e.target.style.backgroundColor = '#8b2ccc'}
-            onMouseOut={(e) => e.target.style.backgroundColor = '#aa3bff'}
-          >
-            📥 Export PDF
-          </button>
+          <select value={locale} onChange={(e) => setLocale(e.target.value)} style={{ padding: '8px', borderRadius: 8, border: '1px solid #2d3e50', background: '#0f1823', color: '#e2e8f0' }} aria-label="Language">
+            <option value="en">English</option>
+            <option value="ur">اردو</option>
+            <option value="ar">العربية</option>
+            <option value="es">Español</option>
+          </select>
+          <div className="action-buttons" style={{ display: 'flex', gap: 12 }}>
+            <button
+              className="action-button secondary"
+              onClick={() => setShowBusDetails(true)}
+              aria-label={t('completeInfo')}
+            >
+              📊 {t('completeInfo')}
+            </button>
+            <button
+              className="action-button primary"
+              onClick={() => exportToPDF(buses, 'brt-dashboard')}
+              aria-label={t('exportPDF')}
+            >
+              📥 {t('exportPDF')}
+            </button>
+          </div>
         </div>
       </div>
       
       <div style={gridStyle}>
-        <StatsCard title="Total Buses" value={buses.length} />
-        <StatsCard title="Avg Speed" value={`${avgSpeed} km/h`} />
-        <StatsCard title="Passengers" value={totalPassengers} />
+        <StatsCard title={t('totalBuses')} value={formatNumber(buses.length)} />
+        <StatsCard title={t('avgSpeed')} value={`${formatNumber(avgSpeed, { maximumFractionDigits: 1 })} km/h`} />
+        <StatsCard title={t('passengers')} value={formatNumber(totalPassengers)} />
       </div>
 
       <div style={contentStyle}>
@@ -220,14 +228,14 @@ export default function Dashboard() {
       </div>
       
       <p style={timestampStyle}>
-        Last updated: {new Date().toLocaleTimeString()}
+        {t('lastUpdated')}: {formatDateTime(new Date())}
       </p>
 
       {/* Complete Bus Information Modal */}
       <div style={modalOverlayStyle} onClick={() => setShowBusDetails(false)}>
         <div style={modalContentStyle} onClick={(e) => e.stopPropagation()}>
-          <div style={modalHeaderStyle}>
-            Complete Bus Information
+            <div style={modalHeaderStyle}>
+            {t('completeInfo')}
             <button 
               style={closeButtonStyle}
               onClick={() => setShowBusDetails(false)}
@@ -257,29 +265,29 @@ export default function Dashboard() {
 
                 <div style={busCardRowStyle}>
                   <span style={buslabelStyle}>Speed:</span>
-                  <span style={{ ...busValueStyle, color: '#00d4ff' }}>{bus.speed} km/h</span>
+                  <span style={{ ...busValueStyle, color: '#00d4ff' }}>{formatNumber(bus.speed, { maximumFractionDigits: 1 })} km/h</span>
                 </div>
 
                 <div style={busCardRowStyle}>
                   <span style={buslabelStyle}>Passengers:</span>
-                  <span style={{ ...busValueStyle, color: '#aa3bff' }}>{bus.passengers}</span>
+                  <span style={{ ...busValueStyle, color: '#aa3bff' }}>{formatNumber(bus.passengers)}</span>
                 </div>
 
                 <div style={busCardRowStyle}>
                   <span style={buslabelStyle}>Delay:</span>
                   <span style={{ ...busValueStyle, color: bus.delay > 5 ? '#ff006e' : '#4ade80' }}>
-                    {bus.delay} min
+                    {formatNumber(bus.delay)} min
                   </span>
                 </div>
 
                 <div style={busCardRowStyle}>
                   <span style={buslabelStyle}>Latitude:</span>
-                  <span style={busValueStyle}>{bus.latitude.toFixed(6)}</span>
+                  <span style={busValueStyle}>{formatNumber(bus.latitude, { maximumFractionDigits: 6 })}</span>
                 </div>
 
                 <div style={busCardRowStyle}>
                   <span style={buslabelStyle}>Longitude:</span>
-                  <span style={busValueStyle}>{bus.longitude.toFixed(6)}</span>
+                  <span style={busValueStyle}>{formatNumber(bus.longitude, { maximumFractionDigits: 6 })}</span>
                 </div>
               </div>
             ))}

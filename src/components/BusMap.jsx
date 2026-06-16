@@ -1,6 +1,15 @@
 import { useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// Fix leaflet's default icon paths for bundlers like Vite
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: new URL('leaflet/dist/images/marker-icon-2x.png', import.meta.url).href,
+  iconUrl: new URL('leaflet/dist/images/marker-icon.png', import.meta.url).href,
+  shadowUrl: new URL('leaflet/dist/images/marker-shadow.png', import.meta.url).href,
+});
 
 export default function BusMap({ buses }) {
   const [selectedBus, setSelectedBus] = useState(null);
@@ -72,7 +81,7 @@ export default function BusMap({ buses }) {
   };
 
   return (
-    <div style={containerStyle}>
+    <div className="map-responsive" style={containerStyle}>
       <div style={mapStyle}>
         <MapContainer center={[24.8607, 67.0011]} zoom={12} style={{ width: '100%', height: '100%' }}>
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
@@ -98,7 +107,7 @@ export default function BusMap({ buses }) {
       </div>
 
       {selectedBus && (
-        <div style={detailsStyle}>
+        <div className="details-sidebar" style={detailsStyle}>
           <div style={detailsHeadingStyle}>Bus Details</div>
           
           <div style={detailRowStyle}>
