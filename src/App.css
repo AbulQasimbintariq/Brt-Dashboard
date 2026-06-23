@@ -120,6 +120,13 @@ select {
   gap: 20px;
   margin-bottom: 20px;
   align-items: flex-start;
+  width: 100%;
+}
+
+.map-frame,
+.leaflet-container {
+  width: 100% !important;
+  min-height: 420px;
 }
 
 .details-sidebar {
@@ -127,13 +134,21 @@ select {
   max-width: 100%;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 992px) {
   .map-responsive {
     flex-direction: column;
   }
 
-  .map-frame {
-    min-height: 260px;
+  .map-frame,
+  .leaflet-container {
+    min-height: 360px;
+  }
+}
+
+@media (max-width: 768px) {
+  .map-frame,
+  .leaflet-container {
+    min-height: 320px;
   }
 
   .details-sidebar {

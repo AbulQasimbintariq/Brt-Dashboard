@@ -9,6 +9,9 @@ import { exportToPDF } from '../lib/exportPDF';
 export default function Dashboard() {
   const buses = useBusData();
   const [showBusDetails, setShowBusDetails] = useState(false);
+  const [selectedStation, setSelectedStation] = useState(null);
+  const [stationSearch, setStationSearch] = useState('');
+  const [stationSort, setStationSort] = useState('count');
   const { locale, setLocale, dir, t, formatNumber, formatDateTime } = useLocale();
   const totalPassengers = buses.reduce((a, b) => a + b.passengers, 0);
   const avgSpeed = buses.length > 0 ? buses.reduce((a, b) => a + b.speed, 0) / buses.length : 0;
@@ -178,8 +181,170 @@ export default function Dashboard() {
     marginBottom: '24px',
   };
 
-  const contentStyle = {
-    display: 'grid',
+  const stationList = [
+    { name: 'Surjani Terminal', lat: 24.8945, lng: 67.0844 },
+    { name: 'Orangi Town', lat: 24.8854, lng: 67.0789 },
+    { name: 'Gulshan-e-Iqbal', lat: 24.8714, lng: 67.0657 },
+    { name: 'Nazimabad', lat: 24.8594, lng: 67.0564 },
+    { name: 'Gulberg', lat: 24.8485, lng: 67.0491 },
+    { name: 'Liaquatabad', lat: 24.8356, lng: 67.0428 },
+    { name: 'Sohrab Goth', lat: 24.8267, lng: 67.0365 },
+    { name: 'Maripur', lat: 24.8178, lng: 67.0302 },
+    { name: 'North Karachi', lat: 24.8089, lng: 67.0239 },
+    { name: 'Federal B Area', lat: 24.8000, lng: 67.0176 },
+    { name: 'Malir City', lat: 24.7911, lng: 67.0113 },
+    { name: 'Bin Qasim', lat: 24.7822, lng: 67.0050 },
+    { name: 'Numaish Terminal', lat: 24.7733, lng: 66.9987 },
+  ];
+
+  const stationMetrics = buses.reduce((acc, bus) => {
+    const match = String(bus.route).match(/\(([^)]+)\)$/);
+    if (match) {
+      const station = match[1];
+      if (!acc[station]) acc[station] = { count: 0, delay: 0, speed: 0 };
+      acc[station].count += 1;
+      acc[station].delay += Number(bus.delay || 0);
+      acc[station].speed += Number(bus.speed || 0);
+    }
+    return acc;
+  }, {});
+
+  const stationCards = stationList.map((station) => {
+    const metrics = stationMetrics[station.name] || { count: 0, delay: 0, speed: 0 };
+    const averageDelay = metrics.count ? metrics.delay / metrics.count : 0;
+    const averageSpeed = metrics.count ? metrics.speed / metrics.count : 0;
+    let status = 'Stable';
+    let statusColor = '#22c55e';
+    if (averageDelay >= 8) {
+      status = 'Delayed';
+      statusColor = '#f97316';
+    } else if (averageDelay >= 4) {
+      status = 'Moderate';
+      statusColor = '#fbbf24';
+    }
+    return {
+      ...station,
+      count: metrics.count,
+      averageDelay,
+      averageSpeed,
+      status,
+      statusColor,
+    };
+  });
+
+  const filteredStations = stationCards
+    .filter((station) => station.name.toLowerCase().includes(stationSearch.toLowerCase()))
+    .sort((a, b) => {
+      if (stationSort === 'count') return b.count - a.count;
+      if (stationSort === 'delay') return b.averageDelay - a.averageDelay;
+      return a.name.localeCompare(b.name);
+    });
+
+  const selectedStationCoordinates = selectedStation
+    ? stationCards.find((station) => station.name === selectedStation)
+    : null;
+
+  const mainContentStyle = {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '24px',
+    alignItems: 'flex-start',
+  };
+
+  const sidebarStyle = {
+    flex: '0 0 280px',
+    minWidth: '240px',
+    backgroundColor: '#0f1823',
+    borderRadius: '12px',
+    padding: '20px',
+    border: '1px solid #2d3e50',
+  };
+
+  const sidebarHeaderStyle = {
+    fontSize: '18px',
+    fontWeight: '700',
+    color: '#aa3bff',
+    marginBottom: '16px',
+  };
+
+  const stationSearchStyle = {
+    width: '100%',
+    padding: '10px 12px',
+    marginBottom: '12px',
+    borderRadius: '10px',
+    border: '1px solid #2d3e50',
+    backgroundColor: '#0b1320',
+    color: '#e2e8f0',
+  };
+
+  const stationSortStyle = {
+    width: '100%',
+    padding: '10px 12px',
+    marginBottom: '16px',
+    borderRadius: '10px',
+    border: '1px solid #2d3e50',
+    backgroundColor: '#0b1320',
+    color: '#e2e8f0',
+  };
+
+  const stationSummaryStyle = {
+    fontSize: '13px',
+    color: '#cbd5e1',
+    marginBottom: '16px',
+    lineHeight: 1.5,
+  };
+
+  const stationBadgeStyle = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '6px 10px',
+    borderRadius: '999px',
+    backgroundColor: '#111827',
+    color: '#e2e8f0',
+    fontSize: '12px',
+    fontWeight: '700',
+  };
+
+  const stationStatusStyle = {
+    fontSize: '12px',
+    fontWeight: '700',
+    letterSpacing: '0.02em',
+    textTransform: 'uppercase',
+  };
+
+  const stationItemStyle = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '10px 12px',
+    borderRadius: '10px',
+    backgroundColor: '#0b1320',
+    marginBottom: '10px',
+    border: '1px solid #18223a',
+  };
+
+  const stationNameStyle = {
+    color: '#e2e8f0',
+    fontSize: '14px',
+    fontWeight: '600',
+  };
+
+  const stationCountStyle = {
+    minWidth: '28px',
+    padding: '4px 8px',
+    borderRadius: '999px',
+    backgroundColor: '#1f2937',
+    color: '#94a3b8',
+    fontSize: '12px',
+    textAlign: 'center',
+  };
+
+  const busMapColumnStyle = {
+    flex: '1 1 420px',
+    minWidth: '320px',
+    display: 'flex',
+    flexDirection: 'column',
     gap: '24px',
   };
 
@@ -230,9 +395,71 @@ export default function Dashboard() {
         <StatsCard title={t('passengers')} value={formatNumber(totalPassengers)} />
       </div>
 
-      <div style={contentStyle}>
-        <BusMap buses={buses} />
-        <DelayGraph buses={buses} />
+      <div style={mainContentStyle}>
+        <div style={sidebarStyle}>
+          <div style={sidebarHeaderStyle}>Station List</div>
+          <div style={stationSummaryStyle}>
+            {filteredStations.length} stations found · {formatNumber(buses.length)} active buses
+          </div>
+          <input
+            type="search"
+            placeholder="Search stations"
+            value={stationSearch}
+            onChange={(e) => setStationSearch(e.target.value)}
+            style={stationSearchStyle}
+            aria-label="Search stations"
+          />
+          <select
+            value={stationSort}
+            onChange={(e) => setStationSort(e.target.value)}
+            style={stationSortStyle}
+            aria-label="Sort stations"
+          >
+            <option value="count">Most buses</option>
+            <option value="delay">Highest delay</option>
+            <option value="name">Alphabetical</option>
+          </select>
+          {filteredStations.length === 0 ? (
+            <div style={{ color: '#94a3b8', padding: '12px 0' }}>No stations match your search.</div>
+          ) : (
+            filteredStations.map((station) => (
+              <button
+                key={station.name}
+                type="button"
+                onClick={() => setSelectedStation(selectedStation === station.name ? null : station.name)}
+                style={{
+                  ...stationItemStyle,
+                  width: '100%',
+                  backgroundColor: selectedStation === station.name ? '#1f2937' : stationItemStyle.backgroundColor,
+                  borderColor: selectedStation === station.name ? '#5b21b6' : stationItemStyle.border,
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                }}
+                aria-pressed={selectedStation === station.name}
+              >
+                <div>
+                  <div style={stationNameStyle}>{station.name}</div>
+                  <div style={{ color: '#94a3b8', fontSize: '12px', marginTop: '6px' }}>
+                    {station.count} buses · {formatNumber(station.averageDelay, { maximumFractionDigits: 1 })} min avg delay
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <span style={{ ...stationBadgeStyle, marginBottom: '8px' }}>
+                    {station.count}
+                  </span>
+                  <div style={{ ...stationStatusStyle, color: station.statusColor }}>
+                    {station.status}
+                  </div>
+                </div>
+              </button>
+            ))
+          )}
+        </div>
+
+        <div style={busMapColumnStyle}>
+          <BusMap buses={buses} selectedStation={selectedStationCoordinates} />
+          <DelayGraph buses={buses} />
+        </div>
       </div>
       
       <p style={timestampStyle}>

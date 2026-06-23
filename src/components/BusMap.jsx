@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { useEffect, useRef, useState } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -11,20 +11,37 @@ L.Icon.Default.mergeOptions({
   shadowUrl: new URL('leaflet/dist/images/marker-shadow.png', import.meta.url).href,
 });
 
-export default function BusMap({ buses }) {
+export default function BusMap({ buses, selectedStation }) {
   const [selectedBus, setSelectedBus] = useState(null);
+  const mapRef = useRef(null);
+
+  useEffect(() => {
+    const resizeObserver = new ResizeObserver(() => {
+      window.dispatchEvent(new Event('resize'));
+    });
+    resizeObserver.observe(document.body);
+    return () => resizeObserver.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (selectedStation && mapRef.current) {
+      mapRef.current.flyTo([selectedStation.lat, selectedStation.lng], 13, { duration: 1.2 });
+    }
+  }, [selectedStation]);
 
   const containerStyle = {
     display: 'flex',
     gap: '20px',
     marginBottom: '20px',
+    flexDirection: 'column',
   };
 
   const mapStyle = {
-    flex: 1,
-    height: '400px',
+    width: '100%',
+    minHeight: '420px',
     borderRadius: '8px',
     overflow: 'hidden',
+    flex: '1 1 auto',
   };
 
   const detailsStyle = {
@@ -83,8 +100,20 @@ export default function BusMap({ buses }) {
   return (
     <div className="map-responsive" style={containerStyle}>
       <div style={mapStyle}>
-        <MapContainer center={[24.8607, 67.0011]} zoom={12} style={{ width: '100%', height: '100%' }}>
+        <MapContainer
+          center={[24.8607, 67.0011]}
+          zoom={12}
+          style={{ width: '100%', height: '100%' }}
+          whenCreated={(map) => { mapRef.current = map; }}
+        >
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          {selectedStation && (
+            <Circle
+              center={[selectedStation.lat, selectedStation.lng]}
+              radius={400}
+              pathOptions={{ color: '#60a5fa', weight: 2, fillOpacity: 0.12 }}
+            />
+          )}
           {buses && buses.map(bus => (
             <Marker 
               key={bus.id} 
