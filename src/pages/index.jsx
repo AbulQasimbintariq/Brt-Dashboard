@@ -24,18 +24,24 @@ export default function Dashboard() {
     marginBottom: '24px',
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     gap: '12px',
+    flexWrap: 'wrap',
   };
 
   const headerLeftStyle = {
-    flex: 1,
+    flex: '1 1 320px',
+    minWidth: 0,
   };
 
   const buttonGroupStyle = {
     display: 'flex',
     gap: '12px',
     alignItems: 'center',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-end',
+    width: '100%',
+    maxWidth: '420px',
   };
 
   const exportButtonStyle = {
@@ -191,17 +197,18 @@ export default function Dashboard() {
           <p style={{ margin: '0', color: '#94a3b8', fontSize: '16px', fontWeight: '500' }}>{t('subtitle')}</p>
         </div>
         <div style={buttonGroupStyle}>
-          <select value={locale} onChange={(e) => setLocale(e.target.value)} style={{ padding: '8px', borderRadius: 8, border: '1px solid #2d3e50', background: '#0f1823', color: '#e2e8f0' }} aria-label="Language">
+          <select value={locale} onChange={(e) => setLocale(e.target.value)} style={{ padding: '8px', borderRadius: 8, border: '1px solid #2d3e50', background: '#0f1823', color: '#e2e8f0', minWidth: '150px' }} aria-label="Language">
             <option value="en">English</option>
             <option value="ur">اردو</option>
             <option value="ar">العربية</option>
             <option value="es">Español</option>
           </select>
-          <div className="action-buttons" style={{ display: 'flex', gap: 12 }}>
+          <div className="action-buttons" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'flex-end', width: '100%' }}>
             <button
               className="action-button secondary"
               onClick={() => setShowBusDetails(true)}
               aria-label={t('completeInfo')}
+              style={{ flex: '1 1 150px', minWidth: 150 }}
             >
               📊 {t('completeInfo')}
             </button>
@@ -209,6 +216,7 @@ export default function Dashboard() {
               className="action-button primary"
               onClick={() => exportToPDF(buses, 'brt-dashboard')}
               aria-label={t('exportPDF')}
+              style={{ flex: '1 1 150px', minWidth: 150 }}
             >
               📥 {t('exportPDF')}
             </button>
@@ -277,6 +285,13 @@ export default function Dashboard() {
                   <span style={buslabelStyle}>Delay:</span>
                   <span style={{ ...busValueStyle, color: bus.delay > 5 ? '#ff006e' : '#4ade80' }}>
                     {formatNumber(bus.delay)} min
+                  </span>
+                </div>
+
+                <div style={busCardRowStyle}>
+                  <span style={buslabelStyle}>ETA to Numaish:</span>
+                  <span style={{ ...busValueStyle, color: '#facc15' }}>
+                    {bus.etaToNumaishLabel}
                   </span>
                 </div>
 

@@ -138,6 +138,13 @@ export default function BusMap({ buses }) {
           </div>
 
           <div style={detailRowStyle}>
+            <span style={labelStyle}>ETA to Numaish</span>
+            <span style={{ ...valueStyle, color: '#facc15' }}>
+              {selectedBus.etaToNumaishLabel}
+            </span>
+          </div>
+
+          <div style={detailRowStyle}>
             <span style={labelStyle}>Latitude</span>
             <span style={valueStyle}>{selectedBus.latitude.toFixed(6)}</span>
           </div>
